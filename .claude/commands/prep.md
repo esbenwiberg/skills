@@ -30,9 +30,46 @@ silently pick one.
 
 ---
 
-## Phase 2: Codebase Research
+## Phase 2: The Loop (Medium + Complex only)
 
-Before drafting anything, understand the terrain:
+This is the core of Prep. It is NOT a linear sequence — it is a cycle with
+explicit decision points and back-edges. Keep looping until you reach "solid".
+
+```
+┌─→ Research codebase
+│         │
+│   Surface findings + questions
+│         │
+│    ┌────┴────┐
+│    │ clear?  │
+│    └────┬────┘
+│    no/  │    \ gaps
+│  needs  │     └──→ Ask the human ──→ (back to Research)
+│  input  │              │
+│    └────┘         pushback?
+│                     └──→ (back to Ask the human)
+│         │
+│   Draft plan + briefs
+│         │
+│    ┌────┴────┐
+│    │ solid?  │
+│    └────┬────┘
+│     no  │  yes
+│     └───┘   │
+│             ▼
+│      Present for review
+│         │
+│    ┌────┴─────┐
+│    │ approved? │
+│    └────┬─────┘
+│     issues    │ yes
+└─────┘         ▼
+          (exit loop → Phase 3)
+```
+
+### Step A: Research Codebase
+
+Understand the terrain before forming opinions:
 
 1. **Map the blast radius** — which files, modules, and boundaries does this
    touch? Use grep, glob, and file reads to verify assumptions.
@@ -43,17 +80,31 @@ Before drafting anything, understand the terrain:
 4. **Find the landmines** — what could go wrong? Shared files, circular
    dependencies, implicit coupling, migration risks.
 
-**Surface your findings to the user.** Ask clarifying questions about anything
-ambiguous. Do NOT proceed to drafting until you have enough context to be
-confident in the approach.
+### Step B: Surface Findings + Questions
 
----
+Present what you found. Then evaluate:
 
-## Phase 3: Plan (Medium + Complex only)
+- **If clear** — you have enough context to draft. Proceed to Step D.
+- **If needs input** — there are ambiguities only the human can resolve.
+  Proceed to Step C.
+- **If gaps** — research was incomplete (e.g. you found a module you didn't
+  know existed, or a pattern you need to understand deeper). Go back to Step A
+  and dig into the gaps.
 
-### For Medium tasks — Single Brief
+### Step C: Ask the Human
 
-Produce one brief covering:
+Ask specific, focused questions. Avoid vague "anything else?" — instead ask
+about the concrete ambiguities you found. After the human responds:
+
+- **If the answer reveals new gaps** — go back to Step A and research those
+  areas.
+- **If clear** — proceed to Step D.
+
+### Step D: Draft Plan + Briefs
+
+Now draft. The scope depends on the complexity level:
+
+**For Medium tasks — Single Brief:**
 - **Objective**: What and why (1-2 sentences)
 - **Files**: Exact files to create/modify with what changes
 - **Approach**: How to implement, referencing discovered patterns
@@ -61,18 +112,18 @@ Produce one brief covering:
 - **Acceptance criteria**: How to verify it works
 - **Estimated scope**: File count, rough complexity
 
-### For Complex tasks — Full Spec Suite
+**For Complex tasks — Full Spec Suite:**
 
-#### 3a. Architecture & Approach (`plan.md`)
+Draft all of the following:
 
-Draft the high-level approach:
+**Architecture & Approach (`plan.md`):**
 - Problem statement and goals
 - Proposed architecture / approach with rationale
 - Alternatives considered and why they were rejected
 - Key risks and mitigations
 - Dependency graph of the work
 
-#### 3b. Architectural Decision Records (`decisions/`)
+**Architectural Decision Records (`decisions/`):**
 
 For each non-obvious decision, create an ADR:
 - **Context**: What forces are at play
@@ -83,7 +134,7 @@ For each non-obvious decision, create an ADR:
 Only create ADRs for decisions that would surprise a competent developer
 reading the code later. Skip the obvious stuff.
 
-#### 3c. Mission Briefs (`briefs/`)
+**Mission Briefs (`briefs/`):**
 
 Decompose into self-contained briefs. Each brief is a unit of work that one
 agent (or developer) can execute independently.
@@ -136,7 +187,7 @@ Files: N | Complexity: low/medium/high
 - Interface contracts are the ONLY coupling between briefs
 - Order briefs by dependency — what must be built first?
 
-#### 3d. Interface Contracts (`contracts.md`)
+**Interface Contracts (`contracts.md`):**
 
 Define shared boundaries between briefs:
 - Shared types / interfaces
@@ -148,7 +199,7 @@ This is where microservices thinking applies to multi-agent development.
 Two agents working on connected briefs need to agree on the contract before
 either starts.
 
-#### 3e. Validation Plan (`validation.md`)
+**Validation Plan (`validation.md`):**
 
 How to verify the complete feature works end-to-end:
 - Integration test scenarios
@@ -157,22 +208,57 @@ How to verify the complete feature works end-to-end:
 - Performance considerations (if applicable)
 - Rollback plan (if applicable)
 
----
+**After drafting, self-check:** Did drafting surface new questions or
+uncertainties? If yes — don't push forward with a shaky plan. Go back to
+Step C (Ask the Human) with the specific issues. If the draft feels solid,
+proceed to Step E.
 
-## Phase 4: Review Loop
+### Step E: Present for Review
 
-After drafting, present the plan to the user:
+Present the plan to the user:
 
 1. **Summarize** the approach in 3-5 bullet points
 2. **Highlight risks** — what are you least confident about?
 3. **Ask for feedback** — what did you get wrong? What's missing?
-4. Iterate until the user approves
+
+Then evaluate the response:
+
+- **If approved** — exit The Loop. Proceed to Phase 3 (Verification).
+- **If issues** — determine where to loop back to:
+  - *Factual errors or missed context* → back to **Step A** (Research).
+    You missed something in the codebase.
+  - *Disagreement on approach or scope* → back to **Step C** (Ask the Human).
+    You need to align on direction before redrafting.
+  - *Minor wording/structure tweaks* → fix in place, re-present.
 
 ---
 
-## Phase 5: Commit Specs
+## Phase 3: Verification Pass
 
-Once approved, write the specs to disk:
+Before committing anything, do a sanity check on the complete spec:
+
+1. **Coverage check** — do the briefs collectively cover everything in the plan?
+   Are there files or changes mentioned in `plan.md` that no brief owns?
+2. **Ownership check** — is every file owned by exactly one brief? Are there
+   overlaps or orphans?
+3. **Contract alignment** — do the interface contracts in `contracts.md` match
+   what the briefs actually reference? Are there briefs that depend on
+   contracts that don't exist, or contracts nobody consumes?
+4. **Dependency sanity** — is the dependency graph acyclic? Can briefs actually
+   be executed in the order specified?
+5. **Acceptance completeness** — does every brief have verifiable acceptance
+   criteria? Does `validation.md` cover the end-to-end case?
+
+**If issues are found** — go back into The Loop at the appropriate step.
+Don't commit broken specs.
+
+**If clean** — proceed to Phase 4.
+
+---
+
+## Phase 4: Commit Specs
+
+Write the specs to disk:
 
 - **Medium tasks**: Write the brief directly to `specs/brief.md` on the current
   branch
