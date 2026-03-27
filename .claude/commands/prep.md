@@ -214,6 +214,20 @@ How to verify the complete feature works end-to-end:
 - Performance considerations (if applicable)
 - Rollback plan (if applicable)
 
+**Acceptance Criteria (`acceptance-criteria.md`):**
+
+A flat, machine-readable file consumed by autonomous validation systems.
+One acceptance criterion per line, plain text, no checkboxes or bullets.
+Aggregate the key acceptance criteria from all briefs plus any end-to-end
+criteria from `validation.md` into a single file. Each line must be a
+self-contained, verifiable assertion. Example:
+
+```
+The API returns 401 for unauthenticated requests
+The migration creates the users table with an email column
+The retry logic backs off exponentially up to 3 attempts
+```
+
 **After drafting, self-check:** Did drafting surface new questions or
 uncertainties? If yes — don't push forward with a shaky plan. Go back to
 Step C (Ask the Human) with the specific issues. If the draft feels solid,
@@ -254,6 +268,9 @@ Before committing anything, do a sanity check on the complete spec:
    be executed in the order specified?
 5. **Acceptance completeness** — does every brief have verifiable acceptance
    criteria? Does `validation.md` cover the end-to-end case?
+6. **Acceptance criteria file** — does `acceptance-criteria.md` exist with one
+   criterion per line? Does it aggregate criteria from all briefs plus
+   end-to-end criteria from `validation.md`?
 
 **If issues are found** — go back into The Loop at the appropriate step.
 Don't commit broken specs.
@@ -266,14 +283,15 @@ Don't commit broken specs.
 
 Write the specs to disk:
 
-- **Medium tasks**: Write the brief directly to `specs/brief.md` on the current
-  branch
+- **Medium tasks**: Write the brief to `specs/brief.md` and the acceptance
+  criteria to `specs/acceptance-criteria.md` on the current branch
 - **Complex tasks**: Write the full spec suite to `specs/` with this structure:
   ```
   specs/
   ├── plan.md
   ├── contracts.md
   ├── validation.md
+  ├── acceptance-criteria.md
   ├── decisions/
   │   ├── 001-[decision-name].md
   │   └── ...
