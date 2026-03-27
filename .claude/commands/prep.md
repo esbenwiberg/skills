@@ -44,17 +44,22 @@ explicit decision points and back-edges. Keep looping until you reach "solid".
 ```
 ┌─→ Research codebase
 │         │
-│   Surface findings + questions
+│   Surface findings
 │         │
 │    ┌────┴────┐
-│    │ clear?  │
+│    │  gaps?  │
 │    └────┬────┘
-│    no/  │    \ gaps
-│  needs  │     └──→ Ask the human ──→ (back to Research)
-│  input  │              │
-│    └────┘         pushback?
-│                     └──→ (back to Ask the human)
+│     yes │  no
+│     └───┘   │
+│             ▼
+│   Ask the human ◄── MANDATORY before first draft
 │         │
+│    ┌────┴──────┐
+│    │ new gaps? │
+│    └────┬──────┘
+│     yes │  no
+│     └───┘   │
+│             ▼
 │   Draft plan + briefs
 │         │
 │    ┌────┴────┐
@@ -90,20 +95,48 @@ Understand the terrain before forming opinions:
 
 Present what you found. Then evaluate:
 
-- **If clear** — you have enough context to draft. Proceed to Step D.
-- **If needs input** — there are ambiguities only the human can resolve.
-  Proceed to Step C.
 - **If gaps** — research was incomplete (e.g. you found a module you didn't
   know existed, or a pattern you need to understand deeper). Go back to Step A
   and dig into the gaps.
+- **Otherwise** — proceed to Step C. **Always.**
 
-### Step C: Ask the Human
+> **Hard rule:** You MUST complete Step C (Ask the Human) at least once before
+> drafting. Even if research feels complete, there are always assumptions worth
+> validating. Do NOT skip to Step D on your first pass through the loop.
 
-Ask specific, focused questions. Avoid vague "anything else?" — instead ask
-about the concrete ambiguities you found. After the human responds:
+### Step C: Ask the Human (MANDATORY before first draft)
 
-- **If the answer reveals new gaps** — go back to Step A and research those
-  areas.
+Interview the user **one question at a time**. This is a conversation, not a
+questionnaire. Each question should build on the previous answer.
+
+**Format rules:**
+- Ask exactly ONE question per message.
+- When there are discrete options, present them as numbered choices:
+  ```
+  How should we handle auth for this endpoint?
+  1. Reuse the existing middleware from `auth.ts`
+  2. Create a new guard specific to this resource
+  3. Skip auth (internal-only endpoint)
+  ```
+- When the question is open-ended, keep it focused and specific.
+- After each answer, either ask the next question or confirm you have enough
+  to proceed.
+
+**Question types (in rough priority order):**
+1. Scope/intent clarifications — "Should this also cover X, or just Y?"
+2. Trade-off decisions — "Option A is simpler but less flexible. Option B
+   handles edge cases but adds complexity. Which direction?"
+3. Assumption validation — "I'm assuming X based on [evidence]. Correct?"
+4. Constraint discovery — "This touches [module] — any constraints I should
+   know about?"
+
+**When to stop asking:** When you've resolved all ambiguities that would
+affect the plan structure. Don't over-interview — 2-5 questions is typical.
+Tell the user: "That's all I need — drafting the spec now."
+
+After the interview:
+
+- **If answers reveal new gaps** — go back to Step A and research those areas.
 - **If clear** — proceed to Step D.
 
 ### Step D: Draft Plan + Briefs
@@ -281,13 +314,20 @@ Don't commit broken specs.
 
 ## Phase 4: Commit Specs
 
-Write the specs to disk:
+Write the specs to disk. All output goes under `specs/<spec-name>/` where
+`<spec-name>` is a short kebab-case slug derived from the feature name
+(e.g. `specs/user-auth/`, `specs/payment-webhooks/`). This keeps multiple
+specs from colliding in the same project.
 
-- **Medium tasks**: Write the brief to `specs/brief.md` and the acceptance
-  criteria to `specs/acceptance-criteria.md` on the current branch
-- **Complex tasks**: Write the full spec suite to `specs/` with this structure:
+- **Medium tasks**: Write the brief and acceptance criteria:
   ```
-  specs/
+  specs/<spec-name>/
+  ├── brief.md
+  └── acceptance-criteria.md
+  ```
+- **Complex tasks**: Write the full spec suite:
+  ```
+  specs/<spec-name>/
   ├── plan.md
   ├── contracts.md
   ├── validation.md
