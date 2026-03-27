@@ -109,6 +109,12 @@ Present what you found. Then evaluate:
 Interview the user **one question at a time**. This is a conversation, not a
 questionnaire. Each question should build on the previous answer.
 
+**Your job is to eliminate ALL assumptions.** Do not assume intent, scope,
+approach, or constraints. If the codebase contradicts the task description,
+surface it. If something is ambiguous, ask. If you're unsure, ask. There is
+no cap on the number of questions — keep going until you have zero
+uncertainty about what to build and how.
+
 **Format rules:**
 - Ask exactly ONE question per message.
 - When there are discrete options, present them as numbered choices:
@@ -119,20 +125,25 @@ questionnaire. Each question should build on the previous answer.
   3. Skip auth (internal-only endpoint)
   ```
 - When the question is open-ended, keep it focused and specific.
-- After each answer, either ask the next question or confirm you have enough
-  to proceed.
+- After each answer, either ask the next question or signal you're ready to
+  draft.
 
-**Question types (in rough priority order):**
-1. Scope/intent clarifications — "Should this also cover X, or just Y?"
-2. Trade-off decisions — "Option A is simpler but less flexible. Option B
+**What to ask about:**
+1. **Contradictions** — "The task says X, but the code does Y. Which is the
+   source of truth?" Never silently resolve contradictions yourself.
+2. **Scope boundaries** — "Should this also cover X, or just Y?"
+3. **Trade-off decisions** — "Option A is simpler but less flexible. Option B
    handles edge cases but adds complexity. Which direction?"
-3. Assumption validation — "I'm assuming X based on [evidence]. Correct?"
-4. Constraint discovery — "This touches [module] — any constraints I should
-   know about?"
+4. **Unclear intent** — "You mentioned X — do you mean [interpretation A] or
+   [interpretation B]?"
+5. **Constraint discovery** — "This touches [module] — any constraints I
+   should know about?"
+6. **Edge cases** — "What should happen when [unusual scenario]?"
 
-**When to stop asking:** When you've resolved all ambiguities that would
-affect the plan structure. Don't over-interview — 2-5 questions is typical.
-Tell the user: "That's all I need — drafting the spec now."
+**When to stop asking:** When you have zero unresolved ambiguities that would
+affect the plan. Not when you've hit some question count — when you're
+genuinely confident you could draft a spec that won't need major revisions.
+Tell the user: "I've got a clear picture now — drafting the spec."
 
 After the interview:
 
